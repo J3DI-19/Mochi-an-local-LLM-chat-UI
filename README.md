@@ -19,7 +19,7 @@ Built with pure Python (stdlib only) + vanilla HTML/CSS/JS — no Node build ste
 ## Highlights
 
 - **Zero-dependency core:** Runs directly on the Python standard library and plain ES6/CSS3 — zero `npm install`, zero `pip install` needed for the server itself.
-- **Dual-backend support:** Proxies OpenAI-compatible SSE streams from both a custom local inference engine (`127.0.0.1:8080`) and **LM Studio** (`127.0.0.1:1234`), with one-click model loading/unloading and live Windows GPU VRAM breakdown.
+- **Dual-backend engine support:** Works out of the box with **LM Studio** (`127.0.0.1:1234`) and **`rdna4-amd-infer` (`ie-serve`)** (`127.0.0.1:8080`) — plus any OpenAI-compatible server — with one-click model loading/unloading and live Windows GPU VRAM breakdown.
 - **17 built-in agentic tools:** Private SearXNG web search, SSRF-guarded URL fetching, weather, Wikipedia, currency conversion, persistent per-account memory, chat search, file sandbox, math/units, and a **sandboxed Python runner** (`numpy`, `pandas`, `matplotlib`, `sympy`) with inline chart rendering and mandatory confirmation.
 - **Expressive companion UI:** Animated SVG Mochi avatar that reacts to thinking, talking, finishing, and errors, with dark/light/system themes, custom accent colors, density/width controls, and mobile PWA support.
 - **Multi-user & remote access:** PBKDF2-SHA256 authentication with `Master`, `User`, and `Limited User` tiers, QR-code LAN mode, and optional **Tailscale Funnel** / **Cloudflare Quick Tunnel** HTTPS sharing.
@@ -39,6 +39,18 @@ Built with pure Python (stdlib only) + vanilla HTML/CSS/JS — no Node build ste
     <td align="center"><img src="docs/screenshots/models-vram.png" alt="Models and live GPU VRAM panel" width="440" /><br/><sub><b>Models &amp; Live GPU VRAM Breakdown</b></sub></td>
   </tr>
 </table>
+
+---
+
+## Supported Inference Engines
+
+| Engine / Backend | Default Address | Capabilities in Mochi |
+|---|---|---|
+| **LM Studio** | `127.0.0.1:1234` (`--lmstudio`) | Lists installed LLMs/VLMs/embeddings, loads &amp; unloads models via LM Studio's REST API (`/api/v1/models/*`), streams `/v1/chat/completions`, supports vision, tool calling, and binary thinking on/off. |
+| **RDNA4 Engine (`rdna4-amd-infer` / `ie-serve`)** | `127.0.0.1:8080` (`--engine`) | Starts/stops `ie-serve` models (e.g. `Qwen3.8 27B IQ3_XS`, `Qwen3.5 9B Q6_K` via `../bench-config/Start-Qwen*.ps1`), full 4-stop **Effort** slider (`Off`, `Low` 768-tok budget, `Medium` 2048-tok budget, `High`), vision, and tool calling. |
+| **Other OpenAI-Compatible Servers** | Custom `--engine host:port` | Any server implementing `/v1/models` and `/v1/chat/completions` SSE streaming (such as `llama-server`, `vLLM`, or `Ollama`) works as a chat &amp; tool-calling endpoint. |
+
+> **Note:** Model start/stop management buttons for the RDNA4 engine expect the sibling `../bench-config/` scripts (`Start-Qwen27B.ps1`, `Start-Qwen9B.ps1`, `Stop-Qwen27B.ps1`). If you run LM Studio or another OpenAI-compatible server standalone, Mochi works on its own without those scripts.
 
 ---
 
@@ -68,9 +80,9 @@ Mochi uses a single server-side registry ([`mochi_tools.py`](mochi_tools.py)) ex
 
 ### 1. Prerequisites
 - **Python 3.11+** (tested on Python 3.13)
-- An OpenAI-compatible local backend:
-  - **LM Studio** running its local server on `http://127.0.0.1:1234`, and/or
-  - An OpenAI-compatible inference server on `http://127.0.0.1:8080`
+- One or more supported inference backends:
+  - **LM Studio** with its local server running on `http://127.0.0.1:1234`, and/or
+  - **`rdna4-amd-infer` (`ie-serve`)** (or any OpenAI-compatible server) on `http://127.0.0.1:8080`
 - *(Optional)* **SearXNG** in `C:\Dev\Tools\searxng` (or `MOCHI_SEARXNG`) for private `web_search`
 - *(Optional)* **Tailscale** or **cloudflared** for remote HTTPS access
 
