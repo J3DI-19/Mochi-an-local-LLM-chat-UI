@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#09090f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Local AI Chat · Mochi</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-256.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="mochiBody" cx="38%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#c9b8ff"/><stop offset=".45" stop-color="#9a7cff"/><stop offset=".8" stop-color="#ff7eb6"/><stop offset="1" stop-color="#ff9f7a"/>
+    </radialGradient>
+    <radialGradient id="mochiOrb" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fffbe6"/><stop offset=".5" stop-color="#ffd36e"/><stop offset="1" stop-color="#ff9f43" stop-opacity=".0"/>
+    </radialGradient>
+    <linearGradient id="mochiShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a0f4a" stop-opacity=".35"/>
+    </linearGradient>
+  </defs>
+</svg>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<!-- login -->
+<div class="auth" id="auth" hidden>
+  <form class="auth-card" id="authForm" autocomplete="on">
+    <div class="avatar-slot md" id="authAvatar"></div>
+    <h2 id="authTitle">Welcome back</h2>
+    <p id="authText">Sign in to chat with Mochi.</p>
+    <div class="pw" id="authUserWrap"><input type="text" id="authUser" name="username" placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64"></div>
+    <div class="pw"><input type="password" id="authPw" placeholder="Password" autocomplete="current-password" required minlength="1"><button type="button" class="pw-eye" data-eye="authPw" title="Show">👁</button></div>
+    <div class="pw" id="authPw2Wrap" hidden><input type="password" id="authPw2" placeholder="Confirm password" autocomplete="new-password"></div>
+    <div class="auth-err" id="authErr"></div>
+    <button class="btn-primary wide" id="authBtn" type="submit">Sign in</button>
+    <small class="auth-note" id="authNote"></small>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="avatar-slot sm" id="brandAvatar"></div>
+      <div class="brand-text"><b>Local AI Chat</b><span id="brandSub">Mochi · on ATHEREAL</span></div>
+      <button class="icon-btn only-mobile" id="sideClose" title="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <button class="btn-new" id="newChat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat<kbd>Ctrl+Shift+O</kbd></button>
+    <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="search" placeholder="Search chats…  (Ctrl+K)" autocomplete="off"><kbd id="searchClear" hidden>Esc</kbd></label>
+    <nav class="chat-list" id="chatList"></nav>
+    <div class="side-foot">
+      <button class="vram-mini" id="vramMini" title="GPU memory — open Models"><div class="vm-bar"><i id="vmFill"></i><i id="vmShared"></i></div><span id="vmText">VRAM …</span></button>
+      <div class="foot-row">
+        <button class="icon-btn" id="themeBtn" title="Toggle light/dark (Ctrl+Shift+L)"><svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></button>
+        <button class="icon-btn" id="openSettings2" title="Settings (Ctrl+,)"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+        <span class="lan-badge" id="lanBadge" hidden title="LAN mode is on"><i></i>LAN</span><span class="lan-badge web" id="webBadge" hidden title="The internet link is on"><i></i>WEB</span>
+        <button class="icon-btn" id="logoutBtn" title="Sign out"><svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg></button>
+        <button class="icon-btn power-btn" id="shutdownBtn" title="Shut down Mochi (stop server, search, internet link &amp; unload models)" hidden><svg viewBox="0 0 24 24"><path d="M12 3v9M18.36 6.64a9 9 0 1 1-12.73 0"/></svg></button>
+      </div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main" id="main">
+    <header class="topbar">
+      <button class="icon-btn" id="sideToggle" title="Toggle sidebar (Ctrl+B)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button>
+      <div class="model-picker" id="modelPicker">
+        <button class="model-btn" id="modelBtn" aria-haspopup="listbox">
+          <span class="dot" id="modelDot"></span><span class="model-name" id="modelName">Choose a model</span><span class="model-sub" id="modelSub"></span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="model-menu" id="modelMenu" role="listbox"></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="job-chip" id="jobChip" hidden><span class="spin"></span><span id="jobChipText"></span><div class="job-bar"><i id="jobChipBar"></i></div></div>
+      <button class="chip-btn" id="openModels" title="Models & VRAM (Ctrl+M)"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg><span>Models</span></button>
+      <button class="icon-btn" id="openSettings" title="Settings (Ctrl+,)"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+    </header>
+
+    <section class="thread" id="thread">
+      <div class="empty" id="empty">
+        <div class="avatar-slot hero" id="heroAvatar"></div>
+        <h1 class="hello"><span id="helloPre">Hey, I'm</span> <em>Mochi</em></h1>
+        <p class="hello-sub" id="heroSub">Your private AI, running entirely on this PC.</p>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="bottom-pad"></div>
+    </section>
+    <button class="to-bottom" id="toBottom" title="Jump to latest"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
+
+    <footer class="composer-wrap">
+      <div class="composer" id="composer">
+        <div class="attach-row" id="attachRow"></div>
+        <div class="composer-row">
+          <button class="icon-btn attach" id="attachBtn" title="Attach image (or paste / drop)"><svg viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg></button>
+          <button class="icon-btn tool-toggle active" id="toolsBtn" title="Tools enabled (click to toggle)"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
+          <textarea id="input" rows="1" placeholder="Message Mochi…" autocomplete="off" enterkeyhint="send"></textarea>
+          <button class="send" id="sendBtn" title="Send"><svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h13M12 5l7 7-7 7"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button>
+        </div>
+        <div class="composer-tools">
+          <div class="effort" id="effort">
+            <span class="effort-label" id="effortLabel">Effort</span>
+            <div class="eslider" id="effortSlider" role="slider" tabindex="0" aria-labelledby="effortLabel" aria-valuemin="0" aria-valuemax="3" aria-valuenow="2" aria-valuetext="Medium">
+              <div class="es-rail"><div class="es-track"><i class="es-fill" id="esFill"></i></div>
+                <span class="es-stop" style="left:0%"></span><span class="es-stop" style="left:33.333%"></span><span class="es-stop" style="left:66.667%"></span><span class="es-stop" style="left:100%"></span>
+                <div class="es-thumb" id="esThumb"><span class="es-bubble" id="esBubble">Med</span></div></div>
+              <div class="es-labels"><button type="button" tabindex="-1" data-e="off">Off</button><button type="button" tabindex="-1" data-e="low">Low</button><button type="button" tabindex="-1" data-e="medium">Med</button><button type="button" tabindex="-1" data-e="high">High</button></div>
+            </div>
+          </div>
+          <span class="effort-note" id="effortNote"></span>
+        </div>
+      </div>
+      <div class="hint" id="hint"></div>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    </footer>
+    <div class="drop" id="drop"><div><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>Drop images for Mochi to look at</div></div>
+  </main>
+
+  <!-- Models sheet -->
+  <aside class="sheet" id="modelsSheet" aria-hidden="true">
+    <div class="sheet-head"><div class="grab"></div><b>Models &amp; GPU</b><button class="icon-btn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="sheet-body" id="modelsBody"></div>
+  </aside>
+
+  <!-- Settings sheet -->
+  <aside class="sheet wide" id="settingsSheet" aria-hidden="true">
+    <div class="sheet-head"><div class="grab"></div><b>Settings</b><button class="icon-btn" data-close><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="tabs" id="setTabs">
+      <button data-tab="look" class="on">Appearance</button><button data-tab="chat">Chat</button><button data-tab="mochi">Mochi</button>
+      <button data-tab="net" id="tabNet">Network</button><button data-tab="account">Account</button><button data-tab="accounts" id="tabAccounts" hidden>Accounts</button><button data-tab="keys">Shortcuts</button>
+    </div>
+    <div class="sheet-body" id="settingsBody"></div>
+  </aside>
+  <div class="sheet-scrim" id="sheetScrim"></div>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="avatar-slot md" id="modalAvatar"></div>
+      <h3 id="modalTitle"></h3>
+      <p id="modalText"></p>
+      <div id="modalExtra" hidden></div>
+      <label class="switch small" id="modalCheckWrap" hidden><input type="checkbox" id="modalCheck"><i></i><span id="modalCheckText"></span></label>
+      <div class="modal-actions"><button class="btn-ghost" id="modalNo">Cancel</button><button class="btn-primary" id="modalYes">OK</button></div>
+    </div>
+  </div>
+  <div class="menu-pop" id="menuPop" hidden></div>
+</div>
+<div class="toasts" id="toasts"></div>
+<script src="qr.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Private runtime data, accounts, sessions, chats & logs (NEVER commit)
+/data/
+/logs/
+*.pid
+*.log
+
+# Local backups & scratch artifacts
+/backup-v*/
+*.bak-*
+/screenshots/
+/tools/shots-*/
+
+# Python & OS caches
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.DS_Store
+Thumbs.db
